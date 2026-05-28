@@ -12,19 +12,24 @@ jobs:
       - name: Checkout mã nguồn mới nhất
         uses: actions/checkout@v4
 
+      # --- THÊM BƯỚC NÀY ĐỂ SỬA LỖI ĐOÁN NHẬN LỆNH NPM ---
+      - name: Khởi tạo môi trường Node.js cho Runner
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Cài đặt và cập nhật code NodeJS Backend
         run: |
-          # Di chuyển vào đúng thư mục Backend viết hoa
+          # Di chuyển vào đúng thư mục Backend
           cd BE_PHONGDAOTAO
           
-          # Cài đặt node_modules sạch môi trường Production
+          # Bây giờ lệnh npm đã có thể chạy mượt mà
           npm install --production
           
           # Đẩy toàn bộ source code vào container NodeJS trên TV Box
           docker cp . node_backend_app:/app/
           
           # Khởi chạy chạy ứng dụng NodeJS ngầm bên trong container
-          # LƯU Ý: Thay thế 'server.js' bằng file chạy chính của bạn (ví dụ: index.js, app.js...) nếu có thay đổi
           docker exec -d node_backend_app sh -c "NODE_ENV=production PORT=8080 node server.js"
 
   deploy-frontend:
@@ -33,17 +38,23 @@ jobs:
       - name: Checkout mã nguồn mới nhất
         uses: actions/checkout@v4
 
+      # --- THÊM BƯỚC NÀY ĐỂ SỬA LỖI ĐOÁN NHẬN LỆNH NPM ---
+      - name: Khởi tạo môi trường Node.js cho Runner
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Cài đặt và Build Frontend ReactJS
         run: |
-          # Di chuyển vào đúng thư mục Frontend viết hoa
+          # Di chuyển vào đúng thư mục Frontend
           cd FE_PHONGDAOTAO
           
           npm install
           
-          # Tạo biến môi trường trỏ API về đúng Subdomain Cloudflare bạn vừa tạo ở bước trước
+          # Tạo biến môi trường trỏ API về đúng Subdomain Cloudflare
           echo "REACT_APP_API_URL=https://api-phongdaotao.mnhwua.id.vn" > .env
           
-          # Tiến hành biên dịch mã nguồn React
+          # Tiến hành biên dịch mã nguồn React sang file tĩnh
           npm run build
 
       - name: Đồng bộ file tĩnh vào container Nginx công cộng
