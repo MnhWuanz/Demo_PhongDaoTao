@@ -1,0 +1,13 @@
+# Chặn các thư mục node_modules nặng
+BE_PHONGDAOTAO/node_modules/
+FE_PHONGDAOTAO/node_modules/
+
+# Chặn thư mục build sau khi biên dịch
+FE_PHONGDAOTAO/build/
+FE_PHONGDAOTAO/dist/
+
+# Chặn các file cấu hình bảo mật và file tài liệu excel phát sinh
+.env
+*.env
+*.xlsx
+Book1.xlsx
