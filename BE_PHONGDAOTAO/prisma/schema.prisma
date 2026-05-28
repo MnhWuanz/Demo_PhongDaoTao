@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Student {
+  id          Int          @id @default(autoincrement())
+  name        String       @db.VarChar(255)
+  email       String       @db.VarChar(255)
+  studentCode String       @db.VarChar(255)
+  class       String       @db.VarChar(255)
+  enrollments Enrollment[]
+}
+
+model Teacher {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(255)
+  email       String   @db.VarChar(255)
+  teacherCode String   @db.VarChar(255)
+  courses     Course[]
+}
+
+model Shift {
+  id           Int      @id @default(autoincrement())
+  name         String   @db.VarChar(255)
+  startTime    String   @db.VarChar(10)
+  endTime      String   @db.VarChar(10)
+  startCourses Course[] @relation("StartShift")
+  endCourses   Course[] @relation("EndShift")
+}
+
+model Room {
+  id       Int      @id @default(autoincrement())
+  name     String   @db.VarChar(255)
+  capacity Int
+  courses  Course[]
+}
+
+model Course {
+  id           Int       @id @default(autoincrement())
+  name         String    @db.VarChar(255)
+  courseCode   String    @db.VarChar(10)
+  teacherId    Int
+  roomId       Int?
+  startShiftId Int?
+  endShiftId   Int?
+  start_date   DateTime? @db.DateTime
+  end_date     DateTime? @db.DateTime
+
+  teacher     Teacher      @relation(fields: [teacherId], references: [id])
+  room        Room?        @relation(fields: [roomId], references: [id])
+  startShift  Shift?       @relation("StartShift", fields: [startShiftId], references: [id])
+  endShift    Shift?       @relation("EndShift", fields: [endShiftId], references: [id])
+  enrollments Enrollment[]
+}
+
+model Study {
+  id   Int    @id @default(autoincrement())
+  name String @db.VarChar(255)
+}
+
+model Enrollment {
+  id        Int     @id @default(autoincrement())
+  studentId Int
+  courseId  Int
+  student   Student @relation(fields: [studentId], references: [id])
+  course    Course  @relation(fields: [courseId], references: [id])
+}
+
+model SyncLog {
+  id         Int      @id @default(autoincrement())
+  courseId   Int
+  courseName String   @db.VarChar(255)
+  status     String   @db.VarChar(50)
+  message    String?  @db.Text
+  createdAt  DateTime @default(now())
+}
