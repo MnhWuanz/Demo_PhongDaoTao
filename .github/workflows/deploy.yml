@@ -32,8 +32,8 @@ jobs:
           file: ./BE_PHONGDAOTAO/Dockerfile
           push: true
           tags: |
-            ghcr.io/MnhWuanz/Demo_PhongDaoTao-backend:latest
-            ghcr.io/MnhWuanz/Demo_PhongDaoTao-backend:${{ github.sha }}
+            ghcr.io/mnhWuanz/demo_phongdaotao-backend:latest
+            ghcr.io/mnhWuanz/demo_phongdaotao-backend:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -44,7 +44,7 @@ jobs:
           file: ./FE_PHONGDAOTAO/Dockerfile
           push: true
           tags: |
-            ghcr.io/MnhWuanz/Demo_PhongDaoTao-frontend:latest
-            ghcr.io/MnhWuanz/Demo_PhongDaoTao-frontend:${{ github.sha }}
+            ghcr.io/mnhWuanz/demo_phongdaotao-frontend:latest
+            ghcr.io/mnhWuanz/demo_phongdaotao-frontend:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
