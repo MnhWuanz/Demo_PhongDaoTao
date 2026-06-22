@@ -51,8 +51,6 @@ const CourseSync = () => {
       const fetchedCourses = courseRes.data.data || [];
       setCourses(fetchedCourses);
       setSyncLogs(logsRes.data.data || []);
-
-      // Auto select first course for preview if available
       if (fetchedCourses.length > 0) {
         setPreviewCourse(fetchedCourses[0]);
       }
@@ -84,7 +82,6 @@ const CourseSync = () => {
     );
     if (alreadySyncedCourses.length > 0) {
       const names = alreadySyncedCourses.map((c) => c.name).join(', ');
-      console.log('Already synced:', alreadySyncedCourses);
       modal.confirm({
         title: 'Xác nhận cập nhật đồng bộ',
         content: `Lớp (${names}) đã được đồng bộ thành công trước đó. Bạn có muốn cập nhật lại thông tin đồng bộ không?`,
@@ -106,12 +103,10 @@ const CourseSync = () => {
       const ids = selectedCourseIds.map((id) => Number(id));
       const res = await syncApi.syncCourses(ids);
       const results = res.data.data || [];
-
       const successCount = results.filter(
         (r: any) => r.log.status === 'SUCCESS',
       ).length;
       const failedCount = results.length - successCount;
-
       if (failedCount === 0) {
         messageApi.success(
           `Đồng bộ thành công ${successCount}/${results.length} lớp học.`,
@@ -121,7 +116,6 @@ const CourseSync = () => {
           `Đồng bộ hoàn tất: ${successCount} thành công, ${failedCount} thất bại.`,
         );
       }
-
       setModalOpen(false);
       setSelectedCourseIds([]);
       loadData();
@@ -146,7 +140,6 @@ const CourseSync = () => {
       if (!dateStr) return '';
       return dateStr.split('T')[0];
     };
-
     const payload = {
       classSectionId: `LHP-2026-${course.courseCode}-${String(course.id).padStart(2, '0')}`,
       subjectName: course.name,
@@ -165,7 +158,7 @@ const CourseSync = () => {
         : null,
       schedules: [
         {
-          dayOfWeek: mapDayOfWeek(course.start_date),
+          dayOfWeek: course.dayOfWeek || mapDayOfWeek(course.start_date),
           startTime: course.startShift?.startTime || '07:00',
           endTime: course.endShift?.endTime || '09:30',
           startDate: formatDate(course.start_date),
@@ -176,11 +169,11 @@ const CourseSync = () => {
         studentId: e.student?.studentCode || '',
         fullName: e.student?.name || '',
         email: e.student?.email || '',
+        class: e.student?.class,
       })),
     };
     return JSON.stringify(payload, null, 2);
   };
-
   const successLogsCount = syncLogs.filter(
     (l) => l.status === 'SUCCESS',
   ).length;

@@ -17,6 +17,9 @@ export const handleInternalError = (res: Response, error: unknown) => {
 };
 
 export const getRelationErrorMessage = (error?: string) => {
+  if (error && error.startsWith('CONFLICT:')) {
+    return error.substring('CONFLICT:'.length).trim();
+  }
   switch (error) {
     case 'TEACHER_NOT_FOUND':
       return 'Teacher not found';

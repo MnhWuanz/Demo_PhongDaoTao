@@ -88,7 +88,7 @@ const apiRoutes = (app: Express) => {
   /// Sync routes
   router.get('/sync-logs', getSyncLogs);
   router.post('/courses/sync', syncCourses);
-
+  router.post('/sync', syncCourses);
   app.use('/api', router);
 };
 export default apiRoutes;

@@ -9,6 +9,7 @@ export const courseSchema = z.object({
   endShiftId: z.coerce.number().int().positive().nullable().optional(),
   start_date: z.coerce.date().nullable().optional(),
   end_date: z.coerce.date().nullable().optional(),
+  dayOfWeek: z.coerce.number().int().min(2).max(8).nullable().optional(),
 });
 
 export const updateCourseSchema = courseSchema
@@ -30,6 +31,7 @@ export type Course = {
   endShiftId?: number | null;
   start_date?: Date | null;
   end_date?: Date | null;
+  dayOfWeek?: number | null;
 };
 
 export type UpdateCourse = Partial<Course>;

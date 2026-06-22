@@ -13,6 +13,7 @@ export interface Course {
   endShiftId?: number | null;
   start_date?: string | null;
   end_date?: string | null;
+  dayOfWeek?: number | null;
   room?: Room;
   startShift?: Shift;
   endShift?: Shift;

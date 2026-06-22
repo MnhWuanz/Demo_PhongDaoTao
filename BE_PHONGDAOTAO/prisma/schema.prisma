@@ -50,6 +50,7 @@ model Course {
   endShiftId   Int?
   start_date   DateTime? @db.DateTime
   end_date     DateTime? @db.DateTime
+  dayOfWeek    Int?
 
   teacher     Teacher      @relation(fields: [teacherId], references: [id])
   room        Room?        @relation(fields: [roomId], references: [id])

@@ -42,12 +42,16 @@ const SessionManagement = () => {
 
   // Map thứ
   const daysMap = {
+    // New format (2 = Thứ 2, ..., 8 = Chủ nhật)
+    2: 'Thứ 2',
+    3: 'Thứ 3',
+    4: 'Thứ 4',
+    5: 'Thứ 5',
+    6: 'Thứ 6',
+    7: 'Thứ 7',
+    8: 'Chủ nhật',
+    // Old format fallback (1 = Thứ 2, 0 = Chủ nhật, etc.)
     1: 'Thứ 2',
-    2: 'Thứ 3',
-    3: 'Thứ 4',
-    4: 'Thứ 5',
-    5: 'Thứ 6',
-    6: 'Thứ 7',
     0: 'Chủ nhật',
   };
 
@@ -62,20 +66,24 @@ const SessionManagement = () => {
 
       // Parse code để lấy thông tin lịch học
       const coursesWithInfo = data.map((course) => {
-        let parsedCode = course.code;
-        let dayId = null;
-        let dayName = '';
-        let startPeriod = null;
-        let endPeriod = null;
-        let room = '';
-        let classPeriod = '';
+        let parsedCode = course.courseCode || course.code || '';
+        let dayId = course.dayOfWeek !== undefined && course.dayOfWeek !== null ? course.dayOfWeek : null;
+        let dayName = dayId !== null ? daysMap[dayId] || '' : '';
+        let startPeriod = course.startShift?.name ? parseInt(course.startShift.name.match(/\d+/)?.[0] || '') : null;
+        let endPeriod = course.endShift?.name ? parseInt(course.endShift.name.match(/\d+/)?.[0] || '') : null;
+        let room = course.room?.name || '';
+        let classPeriod = startPeriod && endPeriod ? `${startPeriod}-${endPeriod}` : '';
 
-        // Parse: code|id thứ|tiết bd - tiết kết thúc|room
-        if (course.code && course.code.includes('|')) {
-          const parts = course.code.split('|');
+        // Fallback for old pipe-delimited format in code/courseCode
+        const codeToCheck = course.courseCode || course.code || '';
+        if (codeToCheck && codeToCheck.includes('|')) {
+          const parts = codeToCheck.split('|');
           parsedCode = parts[0]; // Mã môn thật
-          dayId = parts[1] ? parseInt(parts[1]) : null;
-          dayName = dayId !== null ? daysMap[dayId] || '' : '';
+          const oldDayId = parts[1] ? parseInt(parts[1]) : null;
+          if (oldDayId !== null) {
+            dayId = oldDayId === 0 ? 8 : oldDayId + 1; // Map JS day format to 2-8 standard
+            dayName = daysMap[dayId] || '';
+          }
 
           // Parse tiết học
           if (parts[2] && parts[2].includes('-')) {
@@ -97,8 +105,8 @@ const SessionManagement = () => {
           endPeriod: endPeriod,
           classPeriod: classPeriod,
           room: room,
-          // Tạo label hiển thị: "LTDD - Lập trình di động (Thứ 2, 1-3, C708)"
-          scheduleLabel: `${parsedCode} - ${course.name} (${dayName}, Tiết ${classPeriod}, ${room})`,
+          // Tạo label hiển thị: "LTDD - Lập trình di động (Thứ 2, Tiết 1-3, C708)"
+          scheduleLabel: `${parsedCode} - ${course.name} (${dayName || 'Chưa xếp thứ'}, Tiết ${classPeriod || 'Chưa xếp ca'}, ${room || 'Chưa xếp phòng'})`,
         };
       });
 

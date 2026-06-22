@@ -8,8 +8,17 @@ import { prisma } from 'config/client';
 
 const app = express();
 const PORT = process.env.PORT || 8080;
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  }),
+);
+app.get('/', (req, res) => {
+  res.send('Backend đang chạy');
+});
 
-app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -23,11 +32,9 @@ app.listen(PORT, async () => {
   console.log(`My app is running on port:${PORT}`);
   console.log('env port: ' + process.env.PORT);
 
-  // Auto-seed shifts if empty
   try {
     const shiftCount = await prisma.shift.count();
     if (shiftCount === 0) {
-      console.log('Seeding default shifts...');
       await prisma.shift.createMany({
         data: [
           {
@@ -122,7 +129,6 @@ app.listen(PORT, async () => {
           },
         ],
       });
-      console.log('Seeding default shifts completed.');
     }
   } catch (error) {
     console.error('Error seeding default shifts:', error);

@@ -11,7 +11,7 @@ export interface SyncLog {
 
 const syncApi = {
   getLogs: () => axiosClient.get('/sync-logs'),
-  syncCourses: (courseIds: number[]) => axiosClient.post('/courses/sync', { courseIds }),
+  syncCourses: (courseIds: number[]) =>
+    axiosClient.post('/sync', { courseIds }),
 };
-
 export default syncApi;

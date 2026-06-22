@@ -56,6 +56,26 @@ const DEFAULT_SHIFTS: Shift[] = [
   { id: 15, name: 'Tiết 15 (19h25 - 20h15)', startTime: '19h25', endTime: '20h15' },
 ];
 
+const DAYS_OF_WEEK = [
+  { value: 2, label: 'Thứ 2' },
+  { value: 3, label: 'Thứ 3' },
+  { value: 4, label: 'Thứ 4' },
+  { value: 5, label: 'Thứ 5' },
+  { value: 6, label: 'Thứ 6' },
+  { value: 7, label: 'Thứ 7' },
+  { value: 8, label: 'Chủ nhật' },
+];
+
+const DAYS_MAP: { [key: number]: string } = {
+  2: 'Thứ 2',
+  3: 'Thứ 3',
+  4: 'Thứ 4',
+  5: 'Thứ 5',
+  6: 'Thứ 6',
+  7: 'Thứ 7',
+  8: 'Chủ nhật',
+};
+
 const CourseManagement = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -107,6 +127,7 @@ const CourseManagement = () => {
         roomId: course.roomId,
         startShiftId: course.startShiftId,
         endShiftId: course.endShiftId,
+        dayOfWeek: course.dayOfWeek,
         start_date: course.start_date ? dayjs(course.start_date) : null,
         end_date: course.end_date ? dayjs(course.end_date) : null,
       });
@@ -132,6 +153,7 @@ const CourseManagement = () => {
         roomId: values.roomId || null,
         startShiftId: values.startShiftId || null,
         endShiftId: values.endShiftId || null,
+        dayOfWeek: values.dayOfWeek || null,
         start_date: values.start_date ? values.start_date.toISOString() : null,
         end_date: values.end_date ? values.end_date.toISOString() : null,
       };
@@ -182,30 +204,56 @@ const CourseManagement = () => {
   );
 
   const renderShiftText = (record: Course) => {
+    const dayText = record.dayOfWeek ? DAYS_MAP[record.dayOfWeek] : '';
+    const dayTag = dayText ? <Tag color="purple">{dayText}</Tag> : null;
+
     if (!record.startShift && !record.endShift) {
-      return <span style={{ color: '#bfbfbf', fontStyle: 'italic' }}>Chưa xếp ca</span>;
+      return (
+        <Space size={4} wrap>
+          {dayTag}
+          {!dayTag && <span style={{ color: '#bfbfbf', fontStyle: 'italic' }}>Chưa xếp ca</span>}
+        </Space>
+      );
     }
     if (record.startShift && !record.endShift) {
-      return <Tag color="blue">{record.startShift.name}</Tag>;
+      return (
+        <Space size={4} wrap>
+          {dayTag}
+          <Tag color="blue">{record.startShift.name}</Tag>
+        </Space>
+      );
     }
     if (!record.startShift && record.endShift) {
-      return <Tag color="blue">{record.endShift.name}</Tag>;
+      return (
+        <Space size={4} wrap>
+          {dayTag}
+          <Tag color="blue">{record.endShift.name}</Tag>
+        </Space>
+      );
     }
     
     const start = record.startShift!;
     const end = record.endShift!;
     
     if (start.id === end.id) {
-      return <Tag color="blue">{start.name}</Tag>;
+      return (
+        <Space size={4} wrap>
+          {dayTag}
+          <Tag color="blue">{start.name}</Tag>
+        </Space>
+      );
     }
     
     const startNum = start.name.match(/\d+/)?.[0] || '1';
     const endNum = end.name.match(/\d+/)?.[0] || '1';
     
     return (
-      <Tag color="blue" style={{ whiteSpace: 'normal', height: 'auto', padding: '3px 6px' }}>
-        Tiết {startNum} - {endNum} ({start.startTime} - {end.endTime})
-      </Tag>
+      <Space size={4} direction="vertical" style={{ width: '100%' }}>
+        {dayTag}
+        <Tag color="blue" style={{ whiteSpace: 'normal', height: 'auto', padding: '3px 6px' }}>
+          Tiết {startNum} - {endNum} ({start.startTime} - {end.endTime})
+        </Tag>
+      </Space>
     );
   };
 
@@ -474,10 +522,11 @@ const CourseManagement = () => {
           </Form.Item>
 
           <Row gutter={16}>
-            <Col span={8}>
+            <Col span={12}>
               <Form.Item
                 label={<span style={{ fontWeight: 600 }}>Phòng học</span>}
                 name="roomId"
+                rules={[{ required: true, message: 'Vui lòng chọn phòng học!' }]}
               >
                 <Select
                   placeholder="Chọn phòng"
@@ -491,10 +540,29 @@ const CourseManagement = () => {
                 />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col span={12}>
+              <Form.Item
+                label={<span style={{ fontWeight: 600 }}>Thứ học</span>}
+                name="dayOfWeek"
+                rules={[{ required: true, message: 'Vui lòng chọn thứ học!' }]}
+              >
+                <Select
+                  placeholder="Chọn thứ học"
+                  size="large"
+                  style={{ borderRadius: 8 }}
+                  allowClear
+                  options={DAYS_OF_WEEK}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
               <Form.Item
                 label={<span style={{ fontWeight: 600 }}>Ca bắt đầu</span>}
                 name="startShiftId"
+                rules={[{ required: true, message: 'Vui lòng chọn ca bắt đầu!' }]}
               >
                 <Select
                   placeholder="Bắt đầu"
@@ -508,10 +576,22 @@ const CourseManagement = () => {
                 />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col span={12}>
               <Form.Item
                 label={<span style={{ fontWeight: 600 }}>Ca kết thúc</span>}
                 name="endShiftId"
+                rules={[
+                  { required: true, message: 'Vui lòng chọn ca kết thúc!' },
+                  ({ getFieldValue }) => ({
+                    validator(_, value) {
+                      const startShift = getFieldValue('startShiftId');
+                      if (!value || !startShift || value >= startShift) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject(new Error('Ca kết thúc phải sau hoặc trùng ca bắt đầu!'));
+                    },
+                  }),
+                ]}
               >
                 <Select
                   placeholder="Kết thúc"
@@ -532,6 +612,7 @@ const CourseManagement = () => {
               <Form.Item
                 label={<span style={{ fontWeight: 600 }}>Ngày bắt đầu môn học</span>}
                 name="start_date"
+                rules={[{ required: true, message: 'Vui lòng chọn ngày bắt đầu!' }]}
               >
                 <DatePicker
                   placeholder="Chọn ngày bắt đầu"
@@ -545,6 +626,18 @@ const CourseManagement = () => {
               <Form.Item
                 label={<span style={{ fontWeight: 600 }}>Ngày kết thúc môn học</span>}
                 name="end_date"
+                rules={[
+                  { required: true, message: 'Vui lòng chọn ngày kết thúc!' },
+                  ({ getFieldValue }) => ({
+                    validator(_, value) {
+                      const startDate = getFieldValue('start_date');
+                      if (!value || !startDate || value.isAfter(startDate) || value.isSame(startDate, 'day')) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject(new Error('Ngày kết thúc phải sau hoặc trùng ngày bắt đầu!'));
+                    },
+                  }),
+                ]}
               >
                 <DatePicker
                   placeholder="Chọn ngày kết thúc"

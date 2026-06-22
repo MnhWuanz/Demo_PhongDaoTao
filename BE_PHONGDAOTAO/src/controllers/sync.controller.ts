@@ -15,14 +15,12 @@ export const getSyncLogs = async (req: Request, res: Response) => {
 export const syncCourses = async (req: Request, res: Response) => {
   try {
     const validatedData = await syncCoursesSchema.safeParseAsync(req.body);
-
     if (!validatedData.success) {
       return res.status(400).json({
         message: 'Validation failed',
         errors: validatedData.error.errors,
       });
     }
-
     const results = await handleSyncCourses(validatedData.data.courseIds);
     return res.status(200).json({ message: 'Success', data: results });
   } catch (error) {
