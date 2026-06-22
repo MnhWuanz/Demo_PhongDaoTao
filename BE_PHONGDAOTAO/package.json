@@ -2,12 +2,12 @@
   "name": "nodejs-pro",
   "version": "1.0.0",
   "description": "nodejs -pro ",
-  "main": "app.js",
+  "main": "app.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon",
-    "dev": "nodemon",
-    "start:debug": "nodemon --inspect=9229 -e ts,tsx --exec node -r ts-node/register -r tsconfig-paths/register ./src/app.ts"
+    "start": "node src/app.ts",
+    "prisma:generate": "prisma generate",
+    "db:deploy": "prisma migrate deploy",
+    "start:prod": "prisma migrate deploy && npx ts-node -r tsconfig-paths/register src/app.ts"
   },
   "nodemonConfig": {
     "watch": [
