@@ -28,7 +28,7 @@ services:
     build:
       context: ./BE_PHONGDAOTAO
       dockerfile: Dockerfile
-    image: ghcr.io/nguyenmanhbai/myapp-backend:latest
+    image: ghcr.io/MnhWuanz/Demo_PhongDaoTao-backend:latest
     container_name: app_backend
     restart: unless-stopped
     environment:
@@ -43,7 +43,7 @@ services:
     build:
       context: ./FE_PHONGDAOTAO
       dockerfile: Dockerfile
-    image: ghcr.io/nguyenmanhbai/myapp-frontend:latest
+    image: ghcr.io/MnhWuanz/Demo_PhongDaoTao-frontend:latest
     container_name: app_frontend
     restart: unless-stopped
     depends_on:
