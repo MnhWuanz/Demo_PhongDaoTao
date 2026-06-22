@@ -53,6 +53,13 @@ services:
     command: tunnel --no-autoupdate run --token ${CLOUDFLARED_TOKEN}
     depends_on:
       - frontend
+    networks:
+      - default
+      - proxy
 
 volumes:
   mysql_data:
+
+networks:
+  proxy:
+    external: true
