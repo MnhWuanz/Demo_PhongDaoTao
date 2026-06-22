@@ -9,12 +9,12 @@
 
 */
 -- AlterTable
-ALTER TABLE `course` ADD COLUMN `courseCode` VARCHAR(10) NOT NULL,
+ALTER TABLE `Course` ADD COLUMN `courseCode` VARCHAR(10) NOT NULL,
     MODIFY `end_date` DATETIME NULL,
     MODIFY `start_date` DATETIME NULL;
 
 -- AlterTable
-ALTER TABLE `student` ADD COLUMN `studentCode` VARCHAR(255) NOT NULL;
+ALTER TABLE `Student` ADD COLUMN `studentCode` VARCHAR(255) NOT NULL;
 
 -- AlterTable
-ALTER TABLE `teacher` ADD COLUMN `teacherCode` VARCHAR(255) NOT NULL;
+ALTER TABLE `Teacher` ADD COLUMN `teacherCode` VARCHAR(255) NOT NULL;

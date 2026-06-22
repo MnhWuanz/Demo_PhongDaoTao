@@ -7,13 +7,13 @@
 
 */
 -- DropForeignKey
-ALTER TABLE `course` DROP FOREIGN KEY `Course_shiftId_fkey`;
+ALTER TABLE `Course` DROP FOREIGN KEY `Course_shiftId_fkey`;
 
 -- DropIndex
-DROP INDEX `Course_shiftId_fkey` ON `course`;
+DROP INDEX `Course_shiftId_fkey` ON `Course`;
 
 -- AlterTable
-ALTER TABLE `course` DROP COLUMN `shiftId`,
+ALTER TABLE `Course` DROP COLUMN `shiftId`,
     ADD COLUMN `endShiftId` INTEGER NULL,
     ADD COLUMN `startShiftId` INTEGER NULL,
     MODIFY `end_date` DATETIME NULL,

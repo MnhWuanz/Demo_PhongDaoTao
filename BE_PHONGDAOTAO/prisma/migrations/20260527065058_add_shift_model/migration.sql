@@ -1,5 +1,5 @@
 -- AlterTable
-ALTER TABLE `course` ADD COLUMN `end_date` DATETIME NULL,
+ALTER TABLE `Course` ADD COLUMN `end_date` DATETIME NULL,
     ADD COLUMN `roomId` INTEGER NULL,
     ADD COLUMN `shiftId` INTEGER NULL,
     ADD COLUMN `start_date` DATETIME NULL;
