@@ -20,6 +20,19 @@ services:
       timeout: 5s
       retries: 20
       start_period: 60s
+  phpmyadmin:
+    image: phpmyadmin:latest
+    platform: linux/arm64
+    container_name: phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      UPLOAD_LIMIT: 64M
+    ports:
+      - '8080:80'
+    depends_on:
+      - mysql
 
   backend:
     build:
