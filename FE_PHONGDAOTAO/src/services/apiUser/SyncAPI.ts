@@ -13,5 +13,6 @@ const syncApi = {
   getLogs: () => axiosClient.get('/sync-logs'),
   syncCourses: (courseIds: number[]) =>
     axiosClient.post('/sync', { courseIds }),
+  checkConnection: () => axiosClient.get('/sync/check-connection'),
 };
 export default syncApi;

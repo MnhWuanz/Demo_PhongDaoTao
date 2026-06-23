@@ -36,7 +36,11 @@ import {
   updateTeacher,
 } from 'controllers/teacher.controller';
 import { getAllShifts } from 'controllers/shift.controller';
-import { getSyncLogs, syncCourses } from 'controllers/sync.controller';
+import {
+  checkSyncConnection,
+  getSyncLogs,
+  syncCourses,
+} from 'controllers/sync.controller';
 
 const router = express.Router();
 
@@ -86,9 +90,9 @@ const apiRoutes = (app: Express) => {
   router.get('/shifts', getAllShifts);
 
   /// Sync routes
-  router.get('/sync-logs', getSyncLogs);
-  router.post('/courses/sync', syncCourses);
   router.post('/sync', syncCourses);
+  router.get('/sync/check-connection', checkSyncConnection);
+  router.get('/sync-logs', getSyncLogs);
   app.use('/api', router);
 };
 export default apiRoutes;

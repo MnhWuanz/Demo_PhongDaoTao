@@ -45,6 +45,7 @@ services:
       NODE_ENV: production
       PORT: 3000
       DATABASE_URL: mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE}
+      SYSTEM_URL: ${SYSTEM_URL}
     depends_on:
       mysql:
         condition: service_healthy
@@ -56,6 +57,8 @@ services:
     image: ghcr.io/mnhwuanz/demo_phongdaotao-frontend:latest
     container_name: app_frontend
     restart: unless-stopped
+    environment:
+      VITE_API_URL: ${BACKEND_URL}
     depends_on:
       - backend
 

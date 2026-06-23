@@ -40,7 +40,7 @@ const handleSyncCourses = async (courseIds: number[]) => {
     }
 
     const payload = {
-      classSectionId: `LHP-2026-${course.courseCode}-${String(course.id).padStart(2, '0')}`,
+      classSectionId: `${course.courseCode}-${String(course.id).padStart(2, '0')}`,
       subjectName: course.name,
       room: course.room
         ? {
@@ -53,6 +53,7 @@ const handleSyncCourses = async (courseIds: number[]) => {
             teacherId: course.teacher.teacherCode,
             fullName: course.teacher.name,
             email: course.teacher.email,
+            teacherCode: course.teacher.teacherCode,
           }
         : null,
       schedules: [
@@ -77,14 +78,13 @@ const handleSyncCourses = async (courseIds: number[]) => {
     let isSuccess = false;
     let syncMessage = '';
     try {
-      const response = await fetch('http://localhost:8080/api/sync', {
+      const response = await fetch(`${process.env.SYSTEM_URL}/api/sync`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
       });
-
       const resData = (await response.json()) as any;
       if (response.ok && resData.success) {
         isSuccess = true;
@@ -97,7 +97,6 @@ const handleSyncCourses = async (courseIds: number[]) => {
       isSuccess = false;
       syncMessage = `Lỗi kết nối: Hệ thống đích không phản hồi khi đồng bộ lớp ${payload.classSectionId}.`;
     }
-
     const status = isSuccess ? 'SUCCESS' : 'FAILED';
 
     // Save to sync logs in DB

@@ -25,6 +25,7 @@ import {
   CodeOutlined,
   CloudSyncOutlined,
   BookOutlined,
+  CheckOutlined,
 } from '@ant-design/icons';
 import courseApi, { Course } from '../../services/apiUser/CourseAPI';
 import syncApi, { SyncLog } from '../../services/apiUser/SyncAPI';
@@ -37,6 +38,7 @@ const CourseSync = () => {
   const [syncLogs, setSyncLogs] = useState<SyncLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [isCanSync, setIsCanSync] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedCourseIds, setSelectedCourseIds] = useState<React.Key[]>([]);
   const [previewCourse, setPreviewCourse] = useState<Course | null>(null);
@@ -124,6 +126,21 @@ const CourseSync = () => {
       messageApi.error('Quá trình đồng bộ gặp sự cố kết nối.');
     } finally {
       setSyncing(false);
+    }
+  };
+  const checkConnection = async () => {
+    console.log('click');
+    setIsCanSync(true);
+    try {
+      const res = await syncApi.checkConnection();
+      if (res.data.success) {
+        messageApi.success(res.data.message);
+        setIsCanSync(false);
+      } else {
+        messageApi.error(res.data.message);
+      }
+    } catch (error: any) {
+      messageApi.error('Quá trình đồng bộ gặp sự cố kết nối.');
     }
   };
 
@@ -310,6 +327,15 @@ const CourseSync = () => {
           </div>
           <Space size="middle">
             <Button
+              icon={<CheckOutlined />}
+              size="large"
+              loading={isCanSync}
+              style={{ borderRadius: 8 }}
+              onClick={checkConnection}
+            >
+              Kiểm tra kết nối
+            </Button>
+            <Button
               icon={<ReloadOutlined />}
               onClick={loadData}
               loading={loading}
@@ -318,6 +344,7 @@ const CourseSync = () => {
             >
               Làm mới
             </Button>
+
             <Button
               type="primary"
               shape="round"

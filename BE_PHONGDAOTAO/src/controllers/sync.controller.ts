@@ -27,3 +27,17 @@ export const syncCourses = async (req: Request, res: Response) => {
     return handleInternalError(res, error);
   }
 };
+export const checkSyncConnection = async (req: Request, res: Response) => {
+  try {
+    const response = await fetch(`${process.env.SYSTEM_URL}/api`, {
+      method: 'GET',
+    });
+    if (response.ok) {
+      return res.status(200).json(await response.json());
+    }
+  } catch (error) {
+    return res
+      .status(200)
+      .json({ message: 'Hệ thống không hoạt động', success: false });
+  }
+};
