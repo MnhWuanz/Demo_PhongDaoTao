@@ -49,12 +49,9 @@ services:
       PORT: 3000
       DATABASE_URL: mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE}
       SYSTEM_URL: ${SYSTEM_URL}
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
     depends_on:
       mysql:
         condition: service_healthy
-
   frontend:
     build:
       context: ./FE_PHONGDAOTAO
