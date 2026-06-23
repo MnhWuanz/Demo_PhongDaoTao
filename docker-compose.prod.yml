@@ -20,6 +20,9 @@ services:
       timeout: 5s
       retries: 20
       start_period: 60s
+    networks:
+      - shared_db
+      - default
   phpmyadmin:
     image: phpmyadmin:latest
     platform: linux/arm64
@@ -78,4 +81,6 @@ volumes:
 
 networks:
   proxy:
+    external: true
+  shared_db:
     external: true
