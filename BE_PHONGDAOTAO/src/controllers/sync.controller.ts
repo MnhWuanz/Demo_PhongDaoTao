@@ -36,7 +36,7 @@ export const checkSyncConnection = async (req: Request, res: Response) => {
       return res.status(200).json(await response.json());
     }
   } catch (error: any) {
-    return res.status(200).json({
+    return res.status(500).json({
       message: 'Hệ thống không hoạt động',
       success: false,
       error: error.message,
