@@ -35,9 +35,11 @@ export const checkSyncConnection = async (req: Request, res: Response) => {
     if (response.ok) {
       return res.status(200).json(await response.json());
     }
-  } catch (error) {
-    return res
-      .status(200)
-      .json({ message: 'Hệ thống không hoạt động', success: false });
+  } catch (error: any) {
+    return res.status(200).json({
+      message: 'Hệ thống không hoạt động',
+      success: false,
+      error: error.message,
+    });
   }
 };
