@@ -57,8 +57,6 @@ services:
     image: ghcr.io/mnhwuanz/demo_phongdaotao-frontend:latest
     container_name: app_frontend
     restart: unless-stopped
-    environment:
-      VITE_API_URL: ${BACKEND_URL}
     depends_on:
       - backend
 
