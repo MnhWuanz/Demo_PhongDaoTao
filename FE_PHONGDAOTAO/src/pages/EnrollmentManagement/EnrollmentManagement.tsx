@@ -82,7 +82,7 @@ const EnrollmentManagement = () => {
     return students.filter(
       (student) => 
         !enrolledIds.includes(student.id) &&
-        (student.name.toLowerCase().includes(studentSearchText.toLowerCase()) ||
+        (student.fullName.toLowerCase().includes(studentSearchText.toLowerCase()) ||
          student.email.toLowerCase().includes(studentSearchText.toLowerCase()) ||
          (student.studentCode && student.studentCode.toLowerCase().includes(studentSearchText.toLowerCase())) ||
          (student.class && student.class.toLowerCase().includes(studentSearchText.toLowerCase())))
@@ -171,7 +171,7 @@ const EnrollmentManagement = () => {
       render: (_: any, record: Course) => record.teacher ? (
         <span>
           <UserOutlined style={{ marginRight: 6, color: '#722ed1' }} />
-          {record.teacher.name}
+          {record.teacher.fullName}
         </span>
       ) : <span style={{ color: '#bfbfbf', fontStyle: 'italic' }}>Chưa phân công</span>,
     },
@@ -351,11 +351,11 @@ const EnrollmentManagement = () => {
               },
               {
                 title: 'Họ và tên',
-                dataIndex: 'name',
-                render: (name: string) => (
+                dataIndex: 'fullName',
+                render: (fullName: string) => (
                   <span style={{ fontWeight: 500 }}>
                     <UserOutlined style={{ marginRight: 6, color: '#722ed1' }} />
-                    {name}
+                    {fullName}
                   </span>
                 )
               },
@@ -412,7 +412,7 @@ const EnrollmentManagement = () => {
               {drawerCourse.teacher && (
                 <div style={{ marginTop: 8 }}>
                   <Text type="secondary">Giảng viên: </Text>
-                  <Text strong>{drawerCourse.teacher.name}</Text>
+                  <Text strong>{drawerCourse.teacher.fullName}</Text>
                 </div>
               )}
             </div>
@@ -439,7 +439,7 @@ const EnrollmentManagement = () => {
                         <Avatar style={{ backgroundColor: '#1890ff' }} icon={<UserOutlined />} />
                         <div>
                           <div style={{ fontWeight: 600, color: '#2c3e50' }}>
-                            {record.student?.name}
+                            {record.student?.fullName}
                           </div>
                           <div style={{ fontSize: '11px', color: '#7f8c8d' }}>
                             MSSV: {record.student?.studentCode} | Lớp: {record.student?.class} | {record.student?.email}

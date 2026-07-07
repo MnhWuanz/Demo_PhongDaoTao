@@ -4,12 +4,17 @@ import { Course, UpdateCourse } from 'src/validation/course.schema';
 import 'dotenv/config';
 
 const handleGetAllCourses = async () => {
-  return await prisma.course.findMany({
+  const classes = await prisma.courseClass.findMany({
     include: {
+      subject: true,
       teacher: true,
-      room: true,
-      startShift: true,
-      endShift: true,
+      schedules: {
+        include: {
+          room: true,
+          startShift: true,
+          endShift: true,
+        },
+      },
       enrollments: {
         include: {
           student: true,
@@ -17,19 +22,76 @@ const handleGetAllCourses = async () => {
       },
     },
   });
+
+  return classes.map((cc) => {
+    const firstSchedule = cc.schedules[0] || null;
+    return {
+      id: cc.id,
+      courseCode: cc.courseCode,
+      subjectId: cc.subjectId,
+      teacherId: cc.teacherId,
+      name: cc.subject.name,
+      subject: cc.subject,
+      teacher: cc.teacher,
+      enrollments: cc.enrollments,
+      schedules: cc.schedules,
+      roomId: firstSchedule?.roomId || null,
+      room: firstSchedule?.room || null,
+      startShiftId: firstSchedule?.startShiftId || null,
+      startShift: firstSchedule?.startShift || null,
+      endShiftId: firstSchedule?.endShiftId || null,
+      endShift: firstSchedule?.endShift || null,
+      startDate: firstSchedule?.startDate || null,
+      endDate: firstSchedule?.endDate || null,
+      dayOfWeek: firstSchedule?.dayOfWeek || null,
+    };
+  });
 };
 
 const handleGetCourseById = async (id: number) => {
-  return await prisma.course.findUnique({
+  const cc = await prisma.courseClass.findUnique({
     where: { id },
     include: {
+      subject: true,
       teacher: true,
-      room: true,
-      startShift: true,
-      endShift: true,
-      enrollments: true,
+      schedules: {
+        include: {
+          room: true,
+          startShift: true,
+          endShift: true,
+        },
+      },
+      enrollments: {
+        include: {
+          student: true,
+        },
+      },
     },
   });
+
+  if (!cc) return null;
+
+  const firstSchedule = cc.schedules[0] || null;
+  return {
+    id: cc.id,
+    courseCode: cc.courseCode,
+    subjectId: cc.subjectId,
+    teacherId: cc.teacherId,
+    name: cc.subject.name,
+    subject: cc.subject,
+    teacher: cc.teacher,
+    enrollments: cc.enrollments,
+    schedules: cc.schedules,
+    roomId: firstSchedule?.roomId || null,
+    room: firstSchedule?.room || null,
+    startShiftId: firstSchedule?.startShiftId || null,
+    startShift: firstSchedule?.startShift || null,
+    endShiftId: firstSchedule?.endShiftId || null,
+    endShift: firstSchedule?.endShift || null,
+    startDate: firstSchedule?.startDate || null,
+    endDate: firstSchedule?.endDate || null,
+    dayOfWeek: firstSchedule?.dayOfWeek || null,
+  };
 };
 
 const checkConflict = async (course: {
@@ -38,37 +100,38 @@ const checkConflict = async (course: {
   teacherId: number;
   startShiftId?: number | null;
   endShiftId?: number | null;
-  start_date?: Date | null;
-  end_date?: Date | null;
+  startDate?: Date | null;
+  endDate?: Date | null;
   dayOfWeek?: number | null;
 }) => {
-  if (!course.startShiftId || !course.endShiftId || !course.start_date || !course.end_date || !course.dayOfWeek) {
+  if (!course.startShiftId || !course.endShiftId || !course.startDate || !course.endDate || !course.dayOfWeek) {
     return null;
   }
 
-  const newStart = new Date(course.start_date);
-  const newEnd = new Date(course.end_date);
+  const newStart = new Date(course.startDate);
+  const newEnd = new Date(course.endDate);
 
-  const existingCourses = await prisma.course.findMany({
+  const existingSchedules = await prisma.courseSchedule.findMany({
     where: {
-      id: course.id ? { not: course.id } : undefined,
-      startShiftId: { not: null },
-      endShiftId: { not: null },
-      start_date: { not: null },
-      end_date: { not: null },
+      courseClassId: course.id ? { not: course.id } : undefined,
       dayOfWeek: course.dayOfWeek,
     },
     include: {
-      teacher: true,
+      courseClass: {
+        include: {
+          subject: true,
+          teacher: true,
+        },
+      },
       room: true,
       startShift: true,
       endShift: true,
-    }
+    },
   });
 
-  for (const existing of existingCourses) {
-    const extStart = new Date(existing.start_date!);
-    const extEnd = new Date(existing.end_date!);
+  for (const existing of existingSchedules) {
+    const extStart = new Date(existing.startDate);
+    const extEnd = new Date(existing.endDate);
 
     // Overlap dates: !(newEnd < extStart || newStart > extEnd)
     const dateOverlap = !(newEnd < extStart || newStart > extEnd);
@@ -77,22 +140,22 @@ const checkConflict = async (course: {
     // Overlap shifts: !(endA < startB || startA > endB)
     const startA = course.startShiftId;
     const endA = course.endShiftId;
-    const startB = existing.startShiftId!;
-    const endB = existing.endShiftId!;
+    const startB = existing.startShiftId;
+    const endB = existing.endShiftId;
 
     const shiftOverlap = !(endA < startB || startA > endB);
     if (!shiftOverlap) continue;
 
     // Teacher conflict
-    if (existing.teacherId === course.teacherId) {
+    if (existing.courseClass.teacherId === course.teacherId) {
       const formatDate = (d: Date) => d.toLocaleDateString('vi-VN');
-      return `Giảng viên ${existing.teacher.name} đã có lịch dạy lớp "${existing.name}" (${existing.courseCode}) vào Thứ ${course.dayOfWeek} (Tiết ${existing.startShiftId}-${existing.endShiftId}) từ ${formatDate(extStart)} đến ${formatDate(extEnd)}.`;
+      return `Giảng viên ${existing.courseClass.teacher.fullName} đã có lịch dạy lớp "${existing.courseClass.subject.name}" (${existing.courseClass.courseCode}) vào Thứ ${course.dayOfWeek} (Tiết ${existing.startShiftId}-${existing.endShiftId}) từ ${formatDate(extStart)} đến ${formatDate(extEnd)}.`;
     }
 
     // Room conflict
     if (course.roomId && existing.roomId === course.roomId) {
       const formatDate = (d: Date) => d.toLocaleDateString('vi-VN');
-      return `Phòng ${existing.room?.name || existing.roomId} đã được sử dụng cho lớp "${existing.name}" (${existing.courseCode}) của giảng viên ${existing.teacher.name} vào Thứ ${course.dayOfWeek} (Tiết ${existing.startShiftId}-${existing.endShiftId}) từ ${formatDate(extStart)} đến ${formatDate(extEnd)}.`;
+      return `Phòng ${existing.room?.roomCode || existing.roomId} đã được sử dụng cho lớp "${existing.courseClass.subject.name}" (${existing.courseClass.courseCode}) của giảng viên ${existing.courseClass.teacher.fullName} vào Thứ ${course.dayOfWeek} (Tiết ${existing.startShiftId}-${existing.endShiftId}) từ ${formatDate(extStart)} đến ${formatDate(extEnd)}.`;
     }
   }
 
@@ -141,11 +204,51 @@ const handleCreateCourse = async (course: Course) => {
     return { data: null, error: `CONFLICT:${conflictMessage}` };
   }
 
-  const newCourse = await prisma.course.create({
-    data: course,
+  // Find or create subject based on courseCode (which functions as subjectCode)
+  let subject = await prisma.subject.findUnique({
+    where: { subjectCode: course.courseCode },
   });
 
-  return { data: newCourse };
+  if (!subject) {
+    subject = await prisma.subject.create({
+      data: {
+        subjectCode: course.courseCode,
+        name: course.name,
+      },
+    });
+  } else if (subject.name !== course.name) {
+    subject = await prisma.subject.update({
+      where: { id: subject.id },
+      data: { name: course.name },
+    });
+  }
+
+  // Create CourseClass
+  const newCourseClass = await prisma.courseClass.create({
+    data: {
+      courseCode: course.courseCode,
+      subjectId: subject.id,
+      teacherId: course.teacherId,
+    },
+  });
+
+  // Create CourseSchedule if schedule data provided
+  if (course.roomId && course.startShiftId && course.endShiftId && course.startDate && course.endDate && course.dayOfWeek) {
+    await prisma.courseSchedule.create({
+      data: {
+        courseClassId: newCourseClass.id,
+        roomId: course.roomId,
+        startShiftId: course.startShiftId,
+        endShiftId: course.endShiftId,
+        startDate: course.startDate,
+        endDate: course.endDate,
+        dayOfWeek: course.dayOfWeek,
+      },
+    });
+  }
+
+  const fullCourse = await handleGetCourseById(newCourseClass.id);
+  return { data: fullCourse };
 };
 
 const handleUpdateCourse = async (id: number, course: UpdateCourse) => {
@@ -199,8 +302,8 @@ const handleUpdateCourse = async (id: number, course: UpdateCourse) => {
     roomId: course.roomId !== undefined ? course.roomId : existingCourse.roomId,
     startShiftId: course.startShiftId !== undefined ? course.startShiftId : existingCourse.startShiftId,
     endShiftId: course.endShiftId !== undefined ? course.endShiftId : existingCourse.endShiftId,
-    start_date: course.start_date !== undefined ? course.start_date : existingCourse.start_date,
-    end_date: course.end_date !== undefined ? course.end_date : existingCourse.end_date,
+    startDate: course.startDate !== undefined ? course.startDate : existingCourse.startDate,
+    endDate: course.endDate !== undefined ? course.endDate : existingCourse.endDate,
     dayOfWeek: course.dayOfWeek !== undefined ? course.dayOfWeek : existingCourse.dayOfWeek,
   };
 
@@ -209,12 +312,72 @@ const handleUpdateCourse = async (id: number, course: UpdateCourse) => {
     return { data: null, error: `CONFLICT:${conflictMessage}` };
   }
 
-  const updatedCourse = await prisma.course.update({
+  // Handle Subject update or creation
+  let subjectId = existingCourse.subjectId;
+  if (course.courseCode || course.name) {
+    const finalCode = course.courseCode || existingCourse.courseCode;
+    const finalName = course.name || existingCourse.name;
+
+    let subject = await prisma.subject.findUnique({
+      where: { subjectCode: finalCode },
+    });
+
+    if (!subject) {
+      subject = await prisma.subject.create({
+        data: {
+          subjectCode: finalCode,
+          name: finalName,
+        },
+      });
+    } else if (subject.name !== finalName) {
+      subject = await prisma.subject.update({
+        where: { id: subject.id },
+        data: { name: finalName },
+      });
+    }
+    subjectId = subject.id;
+  }
+
+  // Update CourseClass
+  await prisma.courseClass.update({
     where: { id },
-    data: course,
+    data: {
+      courseCode: course.courseCode !== undefined ? course.courseCode : undefined,
+      teacherId: course.teacherId !== undefined ? course.teacherId : undefined,
+      subjectId,
+    },
   });
 
-  return { data: updatedCourse };
+  // Update or create CourseSchedule
+  const firstSchedule = existingCourse.schedules[0];
+  if (firstSchedule) {
+    await prisma.courseSchedule.update({
+      where: { id: firstSchedule.id },
+      data: {
+        roomId: course.roomId !== undefined ? course.roomId : undefined,
+        startShiftId: course.startShiftId !== undefined ? course.startShiftId : undefined,
+        endShiftId: course.endShiftId !== undefined ? course.endShiftId : undefined,
+        startDate: course.startDate !== undefined ? course.startDate : undefined,
+        endDate: course.endDate !== undefined ? course.endDate : undefined,
+        dayOfWeek: course.dayOfWeek !== undefined ? course.dayOfWeek : undefined,
+      },
+    });
+  } else if (course.roomId && course.startShiftId && course.endShiftId && course.startDate && course.endDate && course.dayOfWeek) {
+    await prisma.courseSchedule.create({
+      data: {
+        courseClassId: id,
+        roomId: course.roomId,
+        startShiftId: course.startShiftId,
+        endShiftId: course.endShiftId,
+        startDate: course.startDate,
+        endDate: course.endDate,
+        dayOfWeek: course.dayOfWeek,
+      },
+    });
+  }
+
+  const fullCourse = await handleGetCourseById(id);
+  return { data: fullCourse };
 };
 
 const handleDeleteCourse = async (id: number) => {
@@ -224,13 +387,13 @@ const handleDeleteCourse = async (id: number) => {
     return null;
   }
 
-  return await prisma.course.delete({
+  return await prisma.courseClass.delete({
     where: { id },
   });
 };
 
 const handleBulkEnroll = async (courseId: number, studentIds: number[]) => {
-  const course = await prisma.course.findUnique({
+  const course = await prisma.courseClass.findUnique({
     where: { id: courseId },
   });
   if (!course) {
@@ -247,12 +410,12 @@ const handleBulkEnroll = async (courseId: number, studentIds: number[]) => {
     }
 
     const existing = await prisma.enrollment.findFirst({
-      where: { studentId, courseId },
+      where: { studentId, courseClassId: courseId },
     });
 
     if (!existing) {
       const enrollment = await prisma.enrollment.create({
-        data: { studentId, courseId },
+        data: { studentId, courseClassId: courseId },
       });
       createdEnrollments.push(enrollment);
     }

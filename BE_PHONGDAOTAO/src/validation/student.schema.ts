@@ -1,10 +1,11 @@
 import * as z from 'zod';
 
 export const studentSchema = z.object({
-  name: z.string().min(2).max(100),
+  fullName: z.string().min(2).max(100),
   email: z.string().email(),
-  studentCode: z.string().min(2).max(50),
+  studentCode: z.string().min(2).max(100),
   class: z.string().min(1).max(100),
+  isFaceRegistered: z.boolean().optional().default(false),
 });
 
 export const updateStudentSchema = studentSchema
@@ -18,10 +19,11 @@ export const studentParamsSchema = z.object({
 });
 
 export type Student = {
-  name: string;
+  fullName: string;
   email: string;
   studentCode: string;
   class: string;
+  isFaceRegistered?: boolean;
 };
 
 export type UpdateStudent = Partial<Student>;

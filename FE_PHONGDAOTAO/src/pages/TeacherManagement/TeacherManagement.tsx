@@ -20,8 +20,8 @@ import {
   ReloadOutlined,
   SearchOutlined,
   UserOutlined,
-  MailOutlined,
   IdcardOutlined,
+  MailOutlined,
 } from '@ant-design/icons';
 import teacherApi, { Teacher } from '../../services/apiUser/TeacherAPI';
 
@@ -74,18 +74,18 @@ const TeacherManagement = () => {
     try {
       if (editingTeacher && editingTeacher.id) {
         await teacherApi.updateTeacher(editingTeacher.id, {
-          name: values.name,
-          email: values.email,
+          fullName: values.fullName,
           teacherCode: values.teacherCode,
+          email: values.email,
         });
-        messageApi.success(`Cập nhật giảng viên ${values.name} thành công`);
+        messageApi.success(`Cập nhật giảng viên ${values.fullName} thành công`);
       } else {
         await teacherApi.createTeacher({
-          name: values.name,
-          email: values.email,
+          fullName: values.fullName,
           teacherCode: values.teacherCode,
+          email: values.email,
         });
-        messageApi.success(`Thêm giảng viên ${values.name} thành công`);
+        messageApi.success(`Thêm giảng viên ${values.fullName} thành công`);
       }
       handleCancel();
       fetchData();
@@ -103,7 +103,7 @@ const TeacherManagement = () => {
     setLoading(true);
     try {
       await teacherApi.deleteTeacher(record.id);
-      messageApi.success(`Xóa giảng viên ${record.name} thành công`);
+      messageApi.success(`Xóa giảng viên ${record.fullName} thành công`);
       fetchData();
     } catch (error: any) {
       console.error(error);
@@ -115,9 +115,9 @@ const TeacherManagement = () => {
 
   const filteredTeachers = teachers.filter(
     (teacher) =>
-      teacher.name.toLowerCase().includes(searchText.toLowerCase()) ||
-      teacher.email.toLowerCase().includes(searchText.toLowerCase()) ||
-      (teacher.teacherCode && teacher.teacherCode.toLowerCase().includes(searchText.toLowerCase())),
+      teacher.fullName.toLowerCase().includes(searchText.toLowerCase()) ||
+      (teacher.teacherCode && teacher.teacherCode.toLowerCase().includes(searchText.toLowerCase())) ||
+      (teacher.email && teacher.email.toLowerCase().includes(searchText.toLowerCase())),
   );
 
   const columns = [
@@ -144,26 +144,27 @@ const TeacherManagement = () => {
     },
     {
       title: 'Họ và tên',
-      dataIndex: 'name',
-      key: 'name',
-      width: '27%',
-      sorter: (a: any, b: any) => a.name.localeCompare(b.name),
-      render: (name: string) => (
+      dataIndex: 'fullName',
+      key: 'fullName',
+      width: '25%',
+      sorter: (a: any, b: any) => a.fullName.localeCompare(b.fullName),
+      render: (fullName: string) => (
         <span style={{ fontWeight: 500, color: '#2c3e50' }}>
           <UserOutlined style={{ marginRight: 8, color: '#722ed1' }} />
-          {name}
+          {fullName}
         </span>
       ),
     },
     {
-      title: 'Email giảng viên',
+      title: 'Email',
       dataIndex: 'email',
       key: 'email',
-      width: '30%',
+      width: '32%',
+      sorter: (a: any, b: any) => (a.email || '').localeCompare(b.email || ''),
       render: (email: string) => (
-        <span>
-          <MailOutlined style={{ marginRight: 8, color: '#13c2c2' }} />
-          {email}
+        <span style={{ color: '#2c3e50' }}>
+          <MailOutlined style={{ marginRight: 8, color: '#722ed1' }} />
+          {email || <span style={{ color: '#bfbfbf', fontStyle: 'italic' }}>Chưa cập nhật</span>}
         </span>
       ),
     },
@@ -314,7 +315,7 @@ const TeacherManagement = () => {
 
           <Form.Item
             label={<span style={{ fontWeight: 600 }}>Họ và tên</span>}
-            name="name"
+            name="fullName"
             rules={[
               { required: true, message: 'Vui lòng nhập tên giảng viên!' },
               { min: 2, message: 'Tên phải chứa ít nhất 2 ký tự!' },
@@ -324,14 +325,14 @@ const TeacherManagement = () => {
           </Form.Item>
 
           <Form.Item
-            label={<span style={{ fontWeight: 600 }}>Địa chỉ Email</span>}
+            label={<span style={{ fontWeight: 600 }}>Email</span>}
             name="email"
             rules={[
               { required: true, message: 'Vui lòng nhập email!' },
-              { type: 'email', message: 'Định dạng email không hợp lệ!' },
+              { type: 'email', message: 'Email không đúng định dạng!' },
             ]}
           >
-            <Input prefix={<MailOutlined style={{ color: '#bfbfbf' }} />} placeholder="example@teacher.com" size="large" style={{ borderRadius: 8 }} />
+            <Input prefix={<MailOutlined style={{ color: '#bfbfbf' }} />} placeholder="Nhập email giảng viên" size="large" style={{ borderRadius: 8 }} />
           </Form.Item>
         </Form>
       </Modal>

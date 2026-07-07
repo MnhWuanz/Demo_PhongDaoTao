@@ -29,8 +29,11 @@ export const syncCourses = async (req: Request, res: Response) => {
 };
 export const checkSyncConnection = async (req: Request, res: Response) => {
   try {
-    const response = await fetch(`${process.env.SYSTEM_URL}/api`, {
+    const response = await fetch(`${process.env.SYSTEM_URL}/api/sync-check`, {
       method: 'GET',
+      headers: {
+        'x-api-key': process.env.SYNC_API_KEY || '',
+      },
     });
     if (response.ok) {
       return res.status(200).json(await response.json());

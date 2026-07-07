@@ -128,8 +128,8 @@ const CourseManagement = () => {
         startShiftId: course.startShiftId,
         endShiftId: course.endShiftId,
         dayOfWeek: course.dayOfWeek,
-        start_date: course.start_date ? dayjs(course.start_date) : null,
-        end_date: course.end_date ? dayjs(course.end_date) : null,
+        startDate: course.startDate ? dayjs(course.startDate) : null,
+        endDate: course.endDate ? dayjs(course.endDate) : null,
       });
     } else {
       setEditingCourse(null);
@@ -154,8 +154,8 @@ const CourseManagement = () => {
         startShiftId: values.startShiftId || null,
         endShiftId: values.endShiftId || null,
         dayOfWeek: values.dayOfWeek || null,
-        start_date: values.start_date ? values.start_date.toISOString() : null,
-        end_date: values.end_date ? values.end_date.toISOString() : null,
+        startDate: values.startDate ? values.startDate.toISOString() : null,
+        endDate: values.endDate ? values.endDate.toISOString() : null,
       };
 
       if (editingCourse && editingCourse.id) {
@@ -193,7 +193,7 @@ const CourseManagement = () => {
 
   const getTeacherName = (teacherId: number) => {
     const teacher = teachers.find((t) => t.id === teacherId);
-    return teacher ? teacher.name : `Giảng viên ID: ${teacherId}`;
+    return teacher ? teacher.fullName : `Giảng viên ID: ${teacherId}`;
   };
 
   const filteredCourses = courses.filter(
@@ -316,7 +316,7 @@ const CourseManagement = () => {
       render: (room: any) => room ? (
         <span>
           <EnvironmentOutlined style={{ marginRight: 6, color: '#fa8c16' }} />
-          {room.name}
+          {room.roomCode}
         </span>
       ) : <span style={{ color: '#bfbfbf', fontStyle: 'italic' }}>Chưa xếp phòng</span>,
     },
@@ -331,11 +331,11 @@ const CourseManagement = () => {
       key: 'dates',
       width: '12%',
       render: (_: any, record: Course) => {
-        if (!record.start_date || !record.end_date) {
+        if (!record.startDate || !record.endDate) {
           return <span style={{ color: '#bfbfbf', fontStyle: 'italic' }}>Chưa có ngày</span>;
         }
-        const startStr = dayjs(record.start_date).format('DD/MM/YYYY');
-        const endStr = dayjs(record.end_date).format('DD/MM/YYYY');
+        const startStr = dayjs(record.startDate).format('DD/MM/YYYY');
+        const endStr = dayjs(record.endDate).format('DD/MM/YYYY');
         return (
           <Space direction="vertical" size={0} style={{ fontSize: '12px' }}>
             <span>BĐ: {startStr}</span>
@@ -515,7 +515,7 @@ const CourseManagement = () => {
               size="large"
               style={{ borderRadius: 8 }}
               options={teachers.map((teacher) => ({
-                label: teacher.name,
+                label: teacher.fullName,
                 value: teacher.id,
               }))}
             />
@@ -534,7 +534,7 @@ const CourseManagement = () => {
                   style={{ borderRadius: 8 }}
                   allowClear
                   options={rooms.map((room) => ({
-                    label: `${room.name} (${room.capacity} chỗ)`,
+                    label: `${room.roomCode} (${room.capacity} chỗ)`,
                     value: room.id,
                   }))}
                 />
@@ -611,7 +611,7 @@ const CourseManagement = () => {
             <Col span={12}>
               <Form.Item
                 label={<span style={{ fontWeight: 600 }}>Ngày bắt đầu môn học</span>}
-                name="start_date"
+                name="startDate"
                 rules={[{ required: true, message: 'Vui lòng chọn ngày bắt đầu!' }]}
               >
                 <DatePicker
@@ -625,12 +625,12 @@ const CourseManagement = () => {
             <Col span={12}>
               <Form.Item
                 label={<span style={{ fontWeight: 600 }}>Ngày kết thúc môn học</span>}
-                name="end_date"
+                name="endDate"
                 rules={[
                   { required: true, message: 'Vui lòng chọn ngày kết thúc!' },
                   ({ getFieldValue }) => ({
                     validator(_, value) {
-                      const startDate = getFieldValue('start_date');
+                      const startDate = getFieldValue('startDate');
                       if (!value || !startDate || value.isAfter(startDate) || value.isSame(startDate, 'day')) {
                         return Promise.resolve();
                       }

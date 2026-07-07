@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 export const roomSchema = z.object({
-  name: z.string().min(2).max(100),
+  roomCode: z.string().min(1).max(100),
   capacity: z.coerce.number().int().positive(),
 });
 
@@ -16,7 +16,7 @@ export const roomParamsSchema = z.object({
 });
 
 export type Room = {
-  name: string;
+  roomCode: string;
   capacity: number;
 };
 

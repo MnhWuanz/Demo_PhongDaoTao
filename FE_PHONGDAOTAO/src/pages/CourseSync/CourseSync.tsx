@@ -104,7 +104,7 @@ const CourseSync = () => {
     try {
       const ids = selectedCourseIds.map((id) => Number(id));
       const res = await syncApi.syncCourses(ids);
-      const results = res.data.data || [];
+      const results = res.data.data?.logs || [];
       const successCount = results.filter(
         (r: any) => r.log.status === 'SUCCESS',
       ).length;
@@ -129,7 +129,6 @@ const CourseSync = () => {
     }
   };
   const checkConnection = async () => {
-    console.log('click');
     setIsCanSync(true);
     try {
       const res = await syncApi.checkConnection();
@@ -140,55 +139,136 @@ const CourseSync = () => {
         messageApi.error(res.data.message);
       }
     } catch (error: any) {
+      setIsCanSync(false);
       messageApi.error('Quá trình đồng bộ gặp sự cố kết nối.');
     }
   };
 
   const getPayloadPreview = (course: Course) => {
-    const mapDayOfWeek = (dateStr?: string | null) => {
-      if (!dateStr) return 2;
-      const date = new Date(dateStr);
-      const day = date.getDay();
-      if (day === 0) return 8; // Sunday
-      return day + 1; // Mon -> 2, Tue -> 3...
-    };
-
     const formatDate = (dateStr?: string | null) => {
       if (!dateStr) return '';
       return dateStr.split('T')[0];
     };
-    const payload = {
-      classSectionId: `LHP-2026-${course.courseCode}-${String(course.id).padStart(2, '0')}`,
-      subjectName: course.name,
-      room: course.room
-        ? {
-            roomId: `ROOM-${course.room.name.replace(/\s+/g, '')}`,
-            roomName: course.room.name,
-          }
-        : null,
-      teacher: course.teacher
-        ? {
-            teacherId: course.teacher.teacherCode,
-            fullName: course.teacher.name,
-            email: course.teacher.email,
-          }
-        : null,
-      schedules: [
-        {
-          dayOfWeek: course.dayOfWeek || mapDayOfWeek(course.start_date),
-          startTime: course.startShift?.startTime || '07:00',
-          endTime: course.endShift?.endTime || '09:30',
-          startDate: formatDate(course.start_date),
-          endDate: formatDate(course.end_date),
-        },
-      ],
-      students: (course.enrollments || []).map((e: any) => ({
-        studentId: e.student?.studentCode || '',
-        fullName: e.student?.name || '',
-        email: e.student?.email || '',
-        class: e.student?.class,
-      })),
+
+    const formatTime = (time?: string | null) => {
+      if (!time) return '00:00:00';
+      const normalizedTime = time.replace(/h/i, ':');
+      const parts = normalizedTime.split(':');
+      const hh = parts[0]?.padStart(2, '0') || '00';
+      const mm = parts[1]?.padStart(2, '0') || '00';
+      const ss = parts[2]?.split('.')[0]?.padStart(2, '0') || '00';
+      return `${hh}:${mm}:${ss}`;
     };
+
+    const subject = {
+      sourceSubjectId: course.subjectId,
+      subjectCode: course.subject?.subjectCode || '',
+      name: course.subject?.name || course.name,
+    };
+
+    const teacher = course.teacher
+      ? {
+          sourceTeacherId: course.teacher.id || 0,
+          teacherCode: course.teacher.teacherCode,
+          fullName: course.teacher.fullName,
+          email: course.teacher.email,
+        }
+      : null;
+
+    const firstSchedule =
+      course.schedules && course.schedules.length > 0
+        ? course.schedules[0]
+        : null;
+    const roomInfo = firstSchedule?.room || course.room;
+
+    const room = roomInfo
+      ? {
+          sourceRoomId: roomInfo.id || 0,
+          room_code: roomInfo.roomCode,
+          capacity: roomInfo.capacity || 60,
+        }
+      : null;
+
+    const shifts: any[] = [];
+    if (course.schedules && course.schedules.length > 0) {
+      course.schedules.forEach((sch) => {
+        if (sch.startShift) {
+          shifts.push({
+            sourceShiftId: sch.startShift.id || 0,
+            name: sch.startShift.name?.split('(')[0].trim() || 'Ca 1',
+            startTime: formatTime(sch.startShift.startTime),
+            endTime: formatTime(sch.startShift.endTime),
+          });
+        }
+      });
+    } else if (course.startShift) {
+      shifts.push({
+        sourceShiftId: course.startShift.id || 0,
+        name: course.startShift.name?.split('(')[0].trim() || 'Ca 1',
+        startTime: formatTime(course.startShift.startTime),
+        endTime: formatTime(course.startShift.endTime),
+      });
+    }
+
+    const students = (course.enrollments || []).map((e: any) => ({
+      sourceStudentId: e.student?.id || 0,
+      student_code: e.student?.studentCode || '',
+      full_name: e.student?.fullName || '',
+      email: e.student?.email || '',
+      class: e.student?.class || '',
+    }));
+
+    const courseClass = {
+      sourceCourseClassId: course.id,
+      courseCode: course.courseCode,
+      sourceSubjectId: course.subjectId,
+      sourceTeacherId: course.teacherId,
+    };
+
+    const courseSchedules =
+      course.schedules && course.schedules.length > 0
+        ? course.schedules.map((sch) => ({
+            sourceCourseScheduleId: sch.id || 0,
+            sourceCourseClassId: course.id,
+            sourceRoomId: sch.room?.id || roomInfo?.id || 0,
+            sourceStartShiftId: sch.startShift?.id || 0,
+            sourceEndShiftId: sch.endShift?.id || 0,
+            startDate: formatDate(sch.startDate),
+            endDate: formatDate(sch.endDate),
+            dayOfWeek: (sch.dayOfWeek || 2) - 1,
+          }))
+        : [
+            {
+              sourceCourseScheduleId: 0,
+              sourceCourseClassId: course.id,
+              sourceRoomId: roomInfo?.id || 0,
+              sourceStartShiftId: course.startShift?.id || 0,
+              sourceEndShiftId: course.endShift?.id || 0,
+              startDate: formatDate(course.startDate),
+              endDate: formatDate(course.endDate),
+              dayOfWeek: (course.dayOfWeek || 2) - 1,
+            },
+          ];
+
+    const enrollments = (course.enrollments || []).map((e: any) => ({
+      sourceEnrollmentId: e.id || 0,
+      sourceCourseClassId: course.id,
+      sourceStudentId: e.student?.id || 0,
+    }));
+
+    const payload: any = {
+      sourceSystem: 'TRAINING_DEMO',
+      syncedAt: new Date().toISOString().replace('Z', '+07:00'),
+      subjects: [subject],
+      teachers: teacher ? [teacher] : [],
+      rooms: room ? [room] : [],
+      shifts: shifts.length > 0 ? shifts : [],
+      students,
+      courseClasses: [courseClass],
+      courseSchedules,
+      enrollments,
+    };
+
     return JSON.stringify(payload, null, 2);
   };
   const successLogsCount = syncLogs.filter(
@@ -222,7 +302,7 @@ const CourseSync = () => {
       title: 'Phòng học / Ca học',
       key: 'roomShift',
       render: (_: any, record: Course) => {
-        const roomName = record.room?.name || 'Chưa xếp phòng';
+        const roomName = record.room?.roomCode || 'Chưa xếp phòng';
         const start = record.startShift?.name.match(/\d+/)?.[0] || '1';
         const end = record.endShift?.name.match(/\d+/)?.[0] || '1';
         return (

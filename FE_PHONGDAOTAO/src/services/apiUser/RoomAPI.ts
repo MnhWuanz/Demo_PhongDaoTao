@@ -2,15 +2,15 @@ import axiosClient from './axiosClient';
 
 export interface Room {
   id?: number;
-  name: string;
+  roomCode: string;
   capacity: number;
 }
 
 const roomApi = {
   getAll: () => axiosClient.get('/rooms'),
   getById: (id: number) => axiosClient.get(`/rooms/${id}`),
-  createRoom: (data: Room) => axiosClient.post('/rooms', data),
-  updateRoom: (id: number, data: Room) => axiosClient.put(`/rooms/${id}`, data),
+  createRoom: (data: Omit<Room, 'id'>) => axiosClient.post('/rooms', data),
+  updateRoom: (id: number, data: Partial<Omit<Room, 'id'>>) => axiosClient.put(`/rooms/${id}`, data),
   deleteRoom: (id: number) => axiosClient.delete(`/rooms/${id}`),
 };
 

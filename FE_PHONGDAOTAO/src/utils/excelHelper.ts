@@ -104,7 +104,7 @@ export const parseStudentExcel = (file: File): Promise<Student[]> => {
 
           parsedStudents.push({
             studentCode: String(row[codeIdx] || '').trim(),
-            name: fullName,
+            fullName: fullName,
             class: String(row[classIdx] || '').trim(),
             email: String(row[emailIdx] || '').trim(),
           });

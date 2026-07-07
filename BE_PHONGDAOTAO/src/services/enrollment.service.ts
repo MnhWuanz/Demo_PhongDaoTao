@@ -7,22 +7,55 @@ import {
 import 'dotenv/config';
 
 const handleGetAllEnrollments = async () => {
-  return await prisma.enrollment.findMany({
+  const enrollments = await prisma.enrollment.findMany({
     include: {
       student: true,
-      course: true,
+      courseClass: {
+        include: {
+          subject: true,
+        },
+      },
     },
   });
+  return enrollments.map((e) => ({
+    id: e.id,
+    studentId: e.studentId,
+    courseId: e.courseClassId,
+    student: e.student,
+    course: {
+      id: e.courseClass.id,
+      courseCode: e.courseClass.courseCode,
+      name: e.courseClass.subject.name,
+      teacherId: e.courseClass.teacherId,
+    },
+  }));
 };
 
 const handleGetEnrollmentById = async (id: number) => {
-  return await prisma.enrollment.findUnique({
+  const enrollment = await prisma.enrollment.findUnique({
     where: { id },
     include: {
       student: true,
-      course: true,
+      courseClass: {
+        include: {
+          subject: true,
+        },
+      },
     },
   });
+  if (!enrollment) return null;
+  return {
+    id: enrollment.id,
+    studentId: enrollment.studentId,
+    courseId: enrollment.courseClassId,
+    student: enrollment.student,
+    course: {
+      id: enrollment.courseClass.id,
+      courseCode: enrollment.courseClass.courseCode,
+      name: enrollment.courseClass.subject.name,
+      teacherId: enrollment.courseClass.teacherId,
+    },
+  };
 };
 
 const checkEnrollmentRelations = async (enrollment: UpdateEnrollment) => {
@@ -37,7 +70,7 @@ const checkEnrollmentRelations = async (enrollment: UpdateEnrollment) => {
   }
 
   if (enrollment.courseId) {
-    const existingCourse = await prisma.course.findUnique({
+    const existingCourse = await prisma.courseClass.findUnique({
       where: { id: enrollment.courseId },
     });
 
@@ -57,7 +90,10 @@ const handleCreateEnrollment = async (enrollment: Enrollment) => {
   }
 
   const newEnrollment = await prisma.enrollment.create({
-    data: enrollment,
+    data: {
+      studentId: enrollment.studentId,
+      courseClassId: enrollment.courseId,
+    },
   });
 
   return { data: newEnrollment };
@@ -81,7 +117,10 @@ const handleUpdateEnrollment = async (
 
   const updatedEnrollment = await prisma.enrollment.update({
     where: { id },
-    data: enrollment,
+    data: {
+      studentId: enrollment.studentId ? enrollment.studentId : undefined,
+      courseClassId: enrollment.courseId ? enrollment.courseId : undefined,
+    },
   });
 
   return { data: updatedEnrollment };

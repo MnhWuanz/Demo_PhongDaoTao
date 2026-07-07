@@ -8,10 +8,25 @@ const handleGetAllTeachers = async () => {
 };
 
 const handleGetTeacherById = async (id: number) => {
-  return await prisma.teacher.findUnique({
+  const teacher = await prisma.teacher.findUnique({
     where: { id },
-    include: { courses: true },
+    include: {
+      classes: {
+        include: {
+          subject: true,
+        },
+      },
+    },
   });
+  if (!teacher) return null;
+  return {
+    ...teacher,
+    courses: teacher.classes.map((cc) => ({
+      id: cc.id,
+      courseCode: cc.courseCode,
+      name: cc.subject.name,
+    })),
+  };
 };
 
 const handleCreateTeacher = async (teacher: Teacher) => {

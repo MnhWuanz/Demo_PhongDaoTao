@@ -83,7 +83,7 @@ const StudentManagement = () => {
           error.response?.data?.message ||
           error.message ||
           'Lỗi không xác định';
-        errors.push(`SV ${student.studentCode} (${student.name}): ${reason}`);
+        errors.push(`SV ${student.studentCode} (${student.fullName}): ${reason}`);
       }
     }
 
@@ -178,20 +178,20 @@ const StudentManagement = () => {
     try {
       if (editingStudent && editingStudent.id) {
         await studentApi.updateStudent(editingStudent.id, {
-          name: values.name,
+          fullName: values.fullName,
           email: values.email,
           studentCode: values.studentCode,
           class: values.class,
         });
-        messageApi.success(`Cập nhật sinh viên ${values.name} thành công`);
+        messageApi.success(`Cập nhật sinh viên ${values.fullName} thành công`);
       } else {
         await studentApi.createStudent({
-          name: values.name,
+          fullName: values.fullName,
           email: values.email,
           studentCode: values.studentCode,
           class: values.class,
         });
-        messageApi.success(`Thêm sinh viên ${values.name} thành công`);
+        messageApi.success(`Thêm sinh viên ${values.fullName} thành công`);
       }
       handleCancel();
       fetchData();
@@ -209,7 +209,7 @@ const StudentManagement = () => {
     setLoading(true);
     try {
       await studentApi.deleteStudent(record.id);
-      messageApi.success(`Xóa sinh viên ${record.name} thành công`);
+      messageApi.success(`Xóa sinh viên ${record.fullName} thành công`);
       fetchData();
     } catch (error: any) {
       console.error(error);
@@ -223,7 +223,7 @@ const StudentManagement = () => {
 
   const filteredStudents = students.filter(
     (student) =>
-      student.name.toLowerCase().includes(searchText.toLowerCase()) ||
+      student.fullName.toLowerCase().includes(searchText.toLowerCase()) ||
       student.email.toLowerCase().includes(searchText.toLowerCase()) ||
       (student.studentCode &&
         student.studentCode.toLowerCase().includes(searchText.toLowerCase())) ||
@@ -260,14 +260,14 @@ const StudentManagement = () => {
     },
     {
       title: 'Họ và tên',
-      dataIndex: 'name',
-      key: 'name',
+      dataIndex: 'fullName',
+      key: 'fullName',
       width: '22%',
-      sorter: (a: any, b: any) => a.name.localeCompare(b.name),
-      render: (name: string) => (
+      sorter: (a: any, b: any) => a.fullName.localeCompare(b.fullName),
+      render: (fullName: string) => (
         <span style={{ fontWeight: 500, color: '#2c3e50' }}>
           <UserOutlined style={{ marginRight: 8, color: '#722ed1' }} />
-          {name}
+          {fullName}
         </span>
       ),
     },
@@ -508,7 +508,7 @@ const StudentManagement = () => {
 
           <Form.Item
             label={<span style={{ fontWeight: 600 }}>Họ và tên</span>}
-            name="name"
+            name="fullName"
             rules={[
               { required: true, message: 'Vui lòng nhập tên sinh viên!' },
               { min: 2, message: 'Tên phải chứa ít nhất 2 ký tự!' },
@@ -636,7 +636,7 @@ const StudentManagement = () => {
               },
               {
                 title: 'Họ và tên',
-                dataIndex: 'name',
+                dataIndex: 'fullName',
                 render: (text) => (
                   <span>
                     <UserOutlined

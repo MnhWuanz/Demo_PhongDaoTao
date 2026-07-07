@@ -1,9 +1,9 @@
 import * as z from 'zod';
 
 export const teacherSchema = z.object({
-  name: z.string().min(2).max(100),
-  email: z.string().email(),
-  teacherCode: z.string().min(2).max(50),
+  fullName: z.string().min(2).max(100),
+  teacherCode: z.string().min(2).max(100),
+  email: z.string().email('Email không đúng định dạng'),
 });
 
 export const updateTeacherSchema = teacherSchema
@@ -17,9 +17,9 @@ export const teacherParamsSchema = z.object({
 });
 
 export type Teacher = {
-  name: string;
-  email: string;
+  fullName: string;
   teacherCode: string;
+  email: string;
 };
 
 export type UpdateTeacher = Partial<Teacher>;

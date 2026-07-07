@@ -8,68 +8,98 @@ datasource db {
 }
 
 model Student {
-  id          Int          @id @default(autoincrement())
-  name        String       @db.VarChar(255)
-  email       String       @db.VarChar(255)
-  studentCode String       @db.VarChar(255)
-  class       String       @db.VarChar(255)
-  enrollments Enrollment[]
+  id               Int          @id @default(autoincrement()) @map("id_student")
+  studentCode      String       @unique @map("student_code") @db.VarChar(100)
+  fullName         String       @map("full_name") @db.VarChar(100)
+  class            String       @db.VarChar(100)
+  email            String       @db.VarChar(100)
+  isFaceRegistered Boolean      @default(false) @map("is_face_registered")
+  enrollments      Enrollment[]
+
+  @@map("EDU_STUDENTS")
 }
 
 model Teacher {
-  id          Int      @id @default(autoincrement())
-  name        String   @db.VarChar(255)
-  email       String   @db.VarChar(255)
-  teacherCode String   @db.VarChar(255)
-  courses     Course[]
+  id          Int           @id @default(autoincrement()) @map("id_teacher")
+  teacherCode String        @unique @map("teacher_code") @db.VarChar(100)
+  fullName    String        @map("full_name") @db.VarChar(100)
+  email       String        @default("") @db.VarChar(100)
+  userId      Int?          @unique @map("id_user")
+  classes     CourseClass[]
+
+  @@map("EDU_TEACHERS")
 }
 
 model Shift {
-  id           Int      @id @default(autoincrement())
-  name         String   @db.VarChar(255)
-  startTime    String   @db.VarChar(10)
-  endTime      String   @db.VarChar(10)
-  startCourses Course[] @relation("StartShift")
-  endCourses   Course[] @relation("EndShift")
+  id             Int              @id @default(autoincrement()) @map("id_shift")
+  name           String           @unique @db.VarChar(50)
+  startTime      String           @map("start_time") @db.VarChar(10)
+  endTime        String           @map("end_time") @db.VarChar(10)
+  startSchedules CourseSchedule[] @relation("StartShift")
+  endSchedules   CourseSchedule[] @relation("EndShift")
+
+  @@map("EDU_SHIFTS")
 }
 
 model Room {
-  id       Int      @id @default(autoincrement())
-  name     String   @db.VarChar(255)
-  capacity Int
-  courses  Course[]
+  id        Int              @id @default(autoincrement()) @map("id_room")
+  roomCode  String           @unique @map("room_code") @db.VarChar(100)
+  capacity  Int
+  schedules CourseSchedule[]
+
+  @@map("EDU_ROOMS")
 }
 
-model Course {
-  id           Int       @id @default(autoincrement())
-  name         String    @db.VarChar(255)
-  courseCode   String    @db.VarChar(10)
-  teacherId    Int
-  roomId       Int?
-  startShiftId Int?
-  endShiftId   Int?
-  start_date   DateTime? @db.DateTime
-  end_date     DateTime? @db.DateTime
-  dayOfWeek    Int?
+model Subject {
+  id          Int           @id @default(autoincrement()) @map("id_subject")
+  subjectCode String        @unique @map("subject_code") @db.VarChar(30)
+  name        String        @db.VarChar(255)
+  classes     CourseClass[]
 
-  teacher     Teacher      @relation(fields: [teacherId], references: [id])
-  room        Room?        @relation(fields: [roomId], references: [id])
-  startShift  Shift?       @relation("StartShift", fields: [startShiftId], references: [id])
-  endShift    Shift?       @relation("EndShift", fields: [endShiftId], references: [id])
+  @@map("EDU_SUBJECTS")
+}
+
+model CourseClass {
+  id         Int    @id @default(autoincrement()) @map("id_course_class")
+  courseCode String @unique @map("course_code") @db.VarChar(100)
+  subjectId  Int    @map("id_subject")
+  teacherId  Int    @map("id_teacher")
+
+  subject     Subject          @relation(fields: [subjectId], references: [id])
+  teacher     Teacher          @relation(fields: [teacherId], references: [id])
+  schedules   CourseSchedule[]
   enrollments Enrollment[]
+
+  @@map("EDU_COURSE_CLASSES")
 }
 
-model Study {
-  id   Int    @id @default(autoincrement())
-  name String @db.VarChar(255)
+model CourseSchedule {
+  id            Int      @id @default(autoincrement()) @map("id_course_schedule")
+  courseClassId Int      @map("id_course_class")
+  roomId        Int      @map("id_room")
+  startShiftId  Int      @map("id_startShift")
+  endShiftId    Int      @map("id_endShift")
+  startDate     DateTime @map("start_date") @db.Date
+  endDate       DateTime @map("end_date") @db.Date
+  dayOfWeek     Int
+
+  courseClass CourseClass @relation(fields: [courseClassId], references: [id], onDelete: Cascade)
+  room        Room        @relation(fields: [roomId], references: [id])
+  startShift  Shift       @relation("StartShift", fields: [startShiftId], references: [id])
+  endShift    Shift       @relation("EndShift", fields: [endShiftId], references: [id])
+
+  @@map("EDU_COURSE_SCHEDULE")
 }
 
 model Enrollment {
-  id        Int     @id @default(autoincrement())
-  studentId Int
-  courseId  Int
-  student   Student @relation(fields: [studentId], references: [id])
-  course    Course  @relation(fields: [courseId], references: [id])
+  id            Int         @id @default(autoincrement()) @map("id_enrollment")
+  studentId     Int         @map("id_student")
+  courseClassId Int         @map("id_course_class")
+  student       Student     @relation(fields: [studentId], references: [id])
+  courseClass   CourseClass @relation(fields: [courseClassId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, courseClassId])
+  @@map("EDU_ENROLLMENT")
 }
 
 model SyncLog {

@@ -74,16 +74,16 @@ const RoomManagement = () => {
     try {
       if (editingRoom && editingRoom.id) {
         await roomApi.updateRoom(editingRoom.id, {
-          name: values.name,
+          roomCode: values.roomCode,
           capacity: values.capacity,
         });
-        messageApi.success(`Cập nhật phòng học ${values.name} thành công`);
+        messageApi.success(`Cập nhật phòng học ${values.roomCode} thành công`);
       } else {
         await roomApi.createRoom({
-          name: values.name,
+          roomCode: values.roomCode,
           capacity: values.capacity,
         });
-        messageApi.success(`Thêm phòng học ${values.name} thành công`);
+        messageApi.success(`Thêm phòng học ${values.roomCode} thành công`);
       }
       handleCancel();
       fetchData();
@@ -101,7 +101,7 @@ const RoomManagement = () => {
     setLoading(true);
     try {
       await roomApi.deleteRoom(record.id);
-      messageApi.success(`Xóa phòng học ${record.name} thành công`);
+      messageApi.success(`Xóa phòng học ${record.roomCode} thành công`);
       fetchData();
     } catch (error: any) {
       console.error(error);
@@ -113,7 +113,7 @@ const RoomManagement = () => {
 
   const filteredRooms = rooms.filter(
     (room) =>
-      room.name.toLowerCase().includes(searchText.toLowerCase()),
+      room.roomCode.toLowerCase().includes(searchText.toLowerCase()),
   );
 
   const columns = [
@@ -126,15 +126,15 @@ const RoomManagement = () => {
       render: (id: number) => <Tag color="orange" style={{ fontSize: '13px', padding: '3px 8px' }}>R-{id}</Tag>,
     },
     {
-      title: 'Tên phòng học',
-      dataIndex: 'name',
-      key: 'name',
+      title: 'Mã phòng học',
+      dataIndex: 'roomCode',
+      key: 'roomCode',
       width: '45%',
-      sorter: (a: any, b: any) => a.name.localeCompare(b.name),
-      render: (name: string) => (
+      sorter: (a: any, b: any) => a.roomCode.localeCompare(b.roomCode),
+      render: (roomCode: string) => (
         <span style={{ fontWeight: 600, color: '#2c3e50' }}>
           <HomeOutlined style={{ marginRight: 8, color: '#fa8c16' }} />
-          {name}
+          {roomCode}
         </span>
       ),
     },
@@ -286,11 +286,11 @@ const RoomManagement = () => {
       >
         <Form form={form} layout="vertical" onFinish={onFinish} style={{ marginTop: 16 }}>
           <Form.Item
-            label={<span style={{ fontWeight: 600 }}>Tên phòng học</span>}
-            name="name"
+            label={<span style={{ fontWeight: 600 }}>Mã phòng học</span>}
+            name="roomCode"
             rules={[
-              { required: true, message: 'Vui lòng nhập tên phòng!' },
-              { min: 2, message: 'Tên phòng phải chứa ít nhất 2 ký tự!' },
+              { required: true, message: 'Vui lòng nhập mã phòng!' },
+              { min: 1, message: 'Mã phòng phải chứa ít nhất 1 ký tự!' },
             ]}
           >
             <Input prefix={<HomeOutlined style={{ color: '#bfbfbf' }} />} placeholder="Ví dụ: C708, C701" size="large" style={{ borderRadius: 8 }} />
