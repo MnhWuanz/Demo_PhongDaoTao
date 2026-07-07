@@ -11,43 +11,43 @@
 
 */
 -- DropForeignKey
-ALTER TABLE `course` DROP FOREIGN KEY `Course_endShiftId_fkey`;
+ALTER TABLE `Course` DROP FOREIGN KEY `Course_endShiftId_fkey`;
 
 -- DropForeignKey
-ALTER TABLE `course` DROP FOREIGN KEY `Course_roomId_fkey`;
+ALTER TABLE `Course` DROP FOREIGN KEY `Course_roomId_fkey`;
 
 -- DropForeignKey
-ALTER TABLE `course` DROP FOREIGN KEY `Course_startShiftId_fkey`;
+ALTER TABLE `Course` DROP FOREIGN KEY `Course_startShiftId_fkey`;
 
 -- DropForeignKey
-ALTER TABLE `course` DROP FOREIGN KEY `Course_teacherId_fkey`;
+ALTER TABLE `Course` DROP FOREIGN KEY `Course_teacherId_fkey`;
 
 -- DropForeignKey
-ALTER TABLE `enrollment` DROP FOREIGN KEY `Enrollment_courseId_fkey`;
+ALTER TABLE `Enrollment` DROP FOREIGN KEY `Enrollment_courseId_fkey`;
 
 -- DropForeignKey
-ALTER TABLE `enrollment` DROP FOREIGN KEY `Enrollment_studentId_fkey`;
+ALTER TABLE `Enrollment` DROP FOREIGN KEY `Enrollment_studentId_fkey`;
 
 -- DropTable
-DROP TABLE `course`;
+DROP TABLE `Course`;
 
 -- DropTable
-DROP TABLE `enrollment`;
+DROP TABLE `Enrollment`;
 
 -- DropTable
-DROP TABLE `room`;
+DROP TABLE `Room`;
 
 -- DropTable
-DROP TABLE `shift`;
+DROP TABLE `Shift`;
 
 -- DropTable
-DROP TABLE `student`;
+DROP TABLE `Student`;
 
 -- DropTable
-DROP TABLE `study`;
+DROP TABLE `Study`;
 
 -- DropTable
-DROP TABLE `teacher`;
+DROP TABLE `Teacher`;
 
 -- CreateTable
 CREATE TABLE `EDU_STUDENTS` (
